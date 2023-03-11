@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.js"></script>
+    </head>
+</head>
+<body>
+    <div id="title"></div>
+    <div id="toc"></div>
+    <div id="control"></div>
+    <div id="article"></div>
+
+    <script>
+        function renderTitle(){
+            document.querySelector("#title").innerHTML=`
+            <header>
+                <h2>WEB</h2>
+                Hello, WEB!
+            </header>
+            `;
+        }
+
+        function renderToc(){
+            const state = store.getState();
+
+            var tag = ''
+            state.contents.forEach((content) => {
+                tag += `<li>${content.title}</li>`
+            });
+
+            document.querySelector("#toc").innerHTML=`
+            <ol>${tag}</ol>
+            `;
+        }
+
+        function renderControl(){
+            document.querySelector("#control").innerHTML=`
+            <input type="button" value="create">
+            <input type="button" value="delete">                
+            `;
+        }
+
+        function renderArticle(){
+            const state = store.getState()
+            var aTitle=``
+            var aBody = ``
+
+            for(var i=0;i<state.contents.length;i++){
+                const content = state.contents[i]
+                
+                if (content.id === state.selected_id) {
+                    aTitle = content.title;
+                    aBody = content.article;
+                    break;
+                }
+            }
+
+            document.querySelector("#article").innerHTML=`
+            <article>
+                <h2>${aTitle}</h2>
+                ${aBody}
+            </article>  
+            `;
+        }
+
+        function reducer(state, action){
+            if (state === undefined){
+                return {
+                    type: "READ",
+                    selected_id: 1,
+                    contents:[ 
+                        {id: 1, title: "HTML", article: "HTML is..."},
+                        {id: 2, title: "CSS", article: "CSS is..."},
+                    ]};
+            };
+        }
+
+        const store = Redux.createStore(reducer);
+
+        // console.log(store.getState())
+
+        renderTitle();
+        renderToc();
+        renderControl();
+        renderArticle();
+    </script>
+
+    
+
+</body>
+</html>
