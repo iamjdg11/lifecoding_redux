@@ -30,7 +30,17 @@
 
             var tag = ''
             state.contents.forEach((content) => {
-                tag += `<li>${content.title}</li>`
+                thisTag = `<li><a href="/" onclick="
+                event.preventDefault();
+                var action = {type:'SELECT', selectedId: ${content.id}};
+                store.dispatch(action);
+                ">${content.title}</a></li>`
+                
+                if (content.id === state.selectedId){
+                    thisTag = `<b>${thisTag}</b>`
+                }
+
+                tag += thisTag
             });
 
             document.querySelector("#toc").innerHTML=`
@@ -39,58 +49,134 @@
         }
 
         function renderControl(){
-            document.querySelector("#control").innerHTML=`
-            <input type="button" value="create">
-            <input type="button" value="delete">                
-            `;
+            const state = store.getState();
+
+            var tags = '';
+
+            if (state.type === 'CREATE_MODE'){
+                tags=`
+                <form onsubmit="
+                    event.preventDefault();
+                    const fTitle = this.title.value;
+                    const fContent = this.content.value;
+
+                    const action = {type: 'CREATE', title:fTitle, content: fContent};
+                    console.log(action);
+                    store.dispatch(action);
+                    ">
+                    <p>
+                        <input type="text" name="title" placeholder="input title here..">
+                    </p>
+                    <p>
+                        <textarea name="content" placeholder="input content of the tile here.."></textarea>
+                    </p>
+                    <p>
+                        <input type="submit" value="submit">
+                        <input type="button" value="cancel" onclick="store.dispatch({type:'READ'})"> 
+                    </p>
+                </form>
+                `;
+            }else{
+                tags = `
+                <input type="button" value="create" onclick="store.dispatch({type:'CREATE_MODE'})">
+                <input type="button" value="delete" onclick="store.dispatch({type:'DELETE'})">                
+                `;
+            }
+
+            document.querySelector("#control").innerHTML=tags;
         }
 
         function renderArticle(){
             const state = store.getState()
-            var aTitle=``
-            var aBody = ``
+            var aTitle= null
+            var aBody = null
 
             for(var i=0;i<state.contents.length;i++){
                 const content = state.contents[i]
                 
-                if (content.id === state.selected_id) {
+                if (content.id === state.selectedId) {
                     aTitle = content.title;
                     aBody = content.article;
                     break;
                 }
             }
 
-            document.querySelector("#article").innerHTML=`
-            <article>
-                <h2>${aTitle}</h2>
-                ${aBody}
-            </article>  
-            `;
+
+            var tags = ''
+
+            if (aTitle !== null){
+                tags = `
+                    <article>
+                        <h2>${aTitle}</h2>
+                        ${aBody}
+                    </article>  
+                    `;
+            }else{
+                tags = '<h3>nothing is selected..</h3>'
+            }
+
+            document.querySelector("#article").innerHTML=tags
         }
 
         function reducer(state, action){
             if (state === undefined){
                 return {
                     type: "READ",
-                    selected_id: 1,
+                    theLastId: 2,
+                    selectedId: 1,
                     contents:[ 
                         {id: 1, title: "HTML", article: "HTML is..."},
                         {id: 2, title: "CSS", article: "CSS is..."},
                     ]};
             };
+
+            if (action.type === "SELECT"){
+                const newState = Object.assign({}, state, {selectedId: action.selectedId})
+                return newState;
+            }else if (action.type === "CREATE_MODE") {
+                const newState = Object.assign({}, state, {type: action.type})
+                return newState;
+            }else if (action.type === "CREATE"){
+                const newId = state.theLastId +1 
+                const newContents = [...state.contents,{id: newId, title: action.title, content: action.content}]
+                
+                const newState = Object.assign({},state, {
+                    theLastId: newId, 
+                    selectedId: newId, 
+                    type: "READ", 
+                    contents:newContents});
+                
+                console.log("newState", newState);
+                return newState;
+            }else if (action.type === "READ"){
+                const newState = Object.assign({}, state, {type:action.type})
+                return newState;
+            }else if (action.type === "DELETE"){
+                const newContents = state.contents.map(content =>{
+                    if (content.id !== state.selectedId){
+                        return content
+                    }else{
+
+                    }
+                }).filter(value => value != undefined)
+                
+                const newState = Object.assign({}, state, {type:"READ", contents: newContents})
+                return newState;
+            }
         }
 
         const store = Redux.createStore(reducer);
 
         // console.log(store.getState())
 
+        store.subscribe(renderToc);
+        store.subscribe(renderControl);
+        store.subscribe(renderArticle);
+
         renderTitle();
         renderToc();
         renderControl();
         renderArticle();
     </script>
-
-    
-
-</body>
+    </body>
 </html>
