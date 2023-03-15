@@ -1,54 +1,24 @@
 import './App.css';
-import Reat, { Component } from 'react'
+import React, { useState } from 'react'
+import AddNumberRoot from './components/AddNumberRoot'
+import DisplayNumberRoot from './components/DisplayNumberRoot';
 
-class AddNumberRoot extends Component {
-  render() {
-    return (
-      <div>
-        <AddNumber/>
-      </div>
-    )
-  }
-}
-
-class AddNumber extends Component {
-  render() {
-    return (
-      <div>
-        <input type="button" value="+" />
-        <input type="text" placeholder='number..'/>
-
-      </div>
-    )
-  }
-}
-
-class DisplayNumberRoot extends Component {
-  render() {
-    return (
-      <div>
-        <DisplayNumber/>
-      </div>
-    )
-  }
-}
-
-class DisplayNumber extends Component {
-  render() {
-    return (
-      <div>
-        <input type="text" />
-      </div>
-    )
-  }
-}
 
 
 function App() {
+
+  const [number, setNumber] = useState([0]);
+
+  const handleNumber = (addValue)=>{
+    setNumber(Number(number) + Number(addValue));
+  }
+
   return (
     <div className="App">
-      hello world!
-    </div>
+      <h1>Root</h1>
+      <AddNumberRoot handleNumber={handleNumber}></AddNumberRoot>
+      <DisplayNumberRoot number={number}></DisplayNumberRoot>
+      </div>
   );
 }
 
